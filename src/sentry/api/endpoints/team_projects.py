@@ -140,6 +140,7 @@ class TeamProjectsEndpoint(TeamEndpoint, EnvironmentMixin):
                             slug=result.get("slug"),
                             organization=team.organization,
                             platform=result.get("platform"),
+                            flags=Project.flags.has_issue_alerts_targeting,
                         )
                 except IntegrityError:
                     return Response(

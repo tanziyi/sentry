@@ -240,7 +240,7 @@ function parseTrace(event: Readonly<SentryTransactionEvent>): ParsedTraceType {
     (entry: {type: string}) => entry.type === 'spans'
   );
 
-  const spans: Array<RawSpanType> = get(spanEntry, 'data', []);
+  let spans: Array<RawSpanType> = get(spanEntry, 'data', []);
 
   const traceContext = getTraceContext(event);
   const traceID = (traceContext && traceContext.trace_id) || '';
@@ -274,10 +274,11 @@ function parseTrace(event: Readonly<SentryTransactionEvent>): ParsedTraceType {
 
   // we reduce spans to become an object mapping span ids to their children
 
-  const orphanSpans = spans.filter(span => {
+  let orphanSpans = spans.filter(span => {
     if (span.parent_span_id) {
-      const hasParent = potentialParents.has(span.parent_span_id);
-      return !hasParent;
+      return true;
+      // const hasParent = potentialParents.has(span.parent_span_id);
+      // return !hasParent;
     }
 
     return true;
@@ -291,6 +292,16 @@ function parseTrace(event: Readonly<SentryTransactionEvent>): ParsedTraceType {
     }
     return 0;
   });
+
+  // TODO: debug
+  orphanSpans = orphanSpans.slice(0, 5);
+  spans = spans.filter(span => {
+    return !!!orphanSpans.find(orphanSpan => {
+      return span.span_id === orphanSpan.span_id;
+    });
+  });
+
+  console.log('orphanSpans', orphanSpans);
 
   const init: ParsedTraceType = {
     op: rootSpanOpName,

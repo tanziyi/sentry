@@ -34,6 +34,7 @@ export type SentryTransactionEvent = {
   };
 };
 
+// map span_id to children whose parent_span_id is equal to span_id
 export type SpanChildrenLookupType = {[span_id: string]: Array<RawSpanType>};
 
 export type ParsedTraceType = {
@@ -46,6 +47,7 @@ export type ParsedTraceType = {
   traceEndTimestamp: number;
   numOfSpans: number;
   spans: RawSpanType[];
+  orphanSpans: RawSpanType[];
 };
 
 export enum TickAlignment {

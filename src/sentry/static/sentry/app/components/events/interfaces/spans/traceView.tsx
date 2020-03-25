@@ -259,10 +259,38 @@ function parseTrace(event: Readonly<SentryTransactionEvent>): ParsedTraceType {
       parentSpanID,
       numOfSpans: 0,
       spans: [],
+      orphanSpans: [],
     };
   }
 
+  // any span may be a parent of another span
+  const potentialParents = new Set(
+    spans.map(span => {
+      return span.span_id;
+    })
+  );
+
+  potentialParents.add(rootSpanID);
+
   // we reduce spans to become an object mapping span ids to their children
+
+  const orphanSpans = spans.filter(span => {
+    if (span.parent_span_id) {
+      const hasParent = potentialParents.has(span.parent_span_id);
+      return !hasParent;
+    }
+
+    return true;
+  });
+
+  orphanSpans.sort(sortSpansAscending);
+
+  orphanSpans.sort((firstSpan: RawSpanType, _secondSpan: RawSpanType) => {
+    if (firstSpan.parent_span_id === undefined) {
+      return -1;
+    }
+    return 0;
+  });
 
   const init: ParsedTraceType = {
     op: rootSpanOpName,
@@ -274,6 +302,7 @@ function parseTrace(event: Readonly<SentryTransactionEvent>): ParsedTraceType {
     parentSpanID,
     numOfSpans: spans.length,
     spans,
+    orphanSpans,
   };
 
   const reduced: ParsedTraceType = spans.reduce((acc, span) => {
@@ -324,20 +353,22 @@ function parseTrace(event: Readonly<SentryTransactionEvent>): ParsedTraceType {
   // sort span children by their start timestamps in ascending order
 
   Object.values(reduced.childSpans).forEach(spanChildren => {
-    spanChildren.sort((firstSpan, secondSpan) => {
-      if (firstSpan.start_timestamp < secondSpan.start_timestamp) {
-        return -1;
-      }
-
-      if (firstSpan.start_timestamp === secondSpan.start_timestamp) {
-        return 0;
-      }
-
-      return 1;
-    });
+    spanChildren.sort(sortSpansAscending);
   });
 
   return reduced;
+}
+
+function sortSpansAscending(firstSpan: RawSpanType, secondSpan: RawSpanType) {
+  if (firstSpan.start_timestamp < secondSpan.start_timestamp) {
+    return -1;
+  }
+
+  if (firstSpan.start_timestamp === secondSpan.start_timestamp) {
+    return 0;
+  }
+
+  return 1;
 }
 
 export default TraceView;

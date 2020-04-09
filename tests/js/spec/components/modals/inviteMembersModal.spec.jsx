@@ -3,12 +3,10 @@ import React from 'react';
 
 import {mountWithTheme} from 'sentry-test/enzyme';
 import InviteMembersModal from 'app/components/modals/inviteMembersModal';
-import TeamStore from 'app/stores/teamStore';
 
 describe('InviteMembersModal', function() {
   const team = TestStubs.Team();
-  const org = TestStubs.Organization({access: ['member:write'], teams: [team]});
-  TeamStore.loadInitialData([team]);
+  const org = TestStubs.Organization({access: ['member:write']});
 
   const noWriteOrg = TestStubs.Organization({
     access: [],
@@ -28,6 +26,12 @@ describe('InviteMembersModal', function() {
       allowed: true,
     },
   ];
+
+  MockApiClient.addMockResponse({
+    url: `/organizations/${org.slug}/teams/`,
+    method: 'GET',
+    body: [team],
+  });
 
   MockApiClient.addMockResponse({
     url: `/organizations/${org.slug}/members/me/`,
@@ -346,6 +350,9 @@ describe('InviteMembersModal', function() {
       />,
       TestStubs.routerContext()
     );
+
+    await tick();
+    wrapper.update();
 
     expect(
       wrapper

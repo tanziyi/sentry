@@ -538,9 +538,8 @@ class JavaScriptStacktraceProcessor(StacktraceProcessor):
         # can't fetch if this is internal node module as well
         # therefore we only process user-land frames (starting with /)
         # or those created by bundle/webpack internals
-        if self.data.get("platform") == "node" and (
-            "node_modules" in frame.get("abs_path")
-            or not frame.get("abs_path").startswith(("/", "app:", "webpack:"))
+        if self.data.get("platform") == "node" and not frame.get("abs_path").startswith(
+            ("/", "app:", "webpack:")
         ):
             return
 
@@ -611,7 +610,9 @@ class JavaScriptStacktraceProcessor(StacktraceProcessor):
                 )
                 source = self.get_sourceview(abs_path)
 
-            if source is None:
+            # most people don't upload source maps for their third-party libraries,
+            # so don't complain if that's what we couldn't find
+            if source is None and "node_modules" not in abs_path:
                 errors = cache.get_errors(abs_path)
                 if errors:
                     all_errors.extend(errors)

@@ -1,8 +1,8 @@
 import React from 'react';
+import Breadcrumb from 'app/components/events/interfaces/breadcrumbs/breadcrumb';
 
 import {shallow} from 'sentry-test/enzyme';
 import BreadcrumbsInterface from 'app/components/events/interfaces/breadcrumbs/breadcrumbs';
-import Breadcrumb from 'app/components/events/interfaces/breadcrumbs/breadcrumb';
 
 describe('BreadcrumbsInterface', function() {
   let PROPS;

@@ -5,29 +5,32 @@ import EventDataSection from 'app/components/events/eventDataSection';
 import GuideAnchor from 'app/components/assistant/guideAnchor';
 import EmptyStateWarning from 'app/components/emptyStateWarning';
 import {t} from 'app/locale';
-import {SentryEventBase} from 'app/types';
+import {Event} from 'app/types';
 import space from 'app/styles/space';
 
 import {PlatformContextProvider} from './platformContext';
 import BreadCrumbsSearch from './breadcrumbsSearch';
-import Breadcrumb from './breadcrumb';
+import BreadcrumbTime from './breadcrumbTime';
 import BreadcrumbCollapsed from './breadcrumbCollapsed';
-import {Crumb} from './types';
+import convertBreadcrumbType from './convertBreadcrumbType';
+import getBreadcrumbDetails from './getBreadcrumbDetails';
+import {Breadcrumb} from './types';
+import {BreadCrumb, BreadCrumbIconWrapper} from './styles';
 
 const MAX_CRUMBS_WHEN_COLLAPSED = 10;
 
 type State = {
   isCollapsed: boolean;
   searchTerm: string;
-  crumbs: Array<Crumb>;
-  filteredCrumbs: Array<Crumb>;
+  breadcrumbs: Array<Breadcrumb>;
+  filteredBreadcrumbs: Array<Breadcrumb>;
 };
 
 type Props = {
-  event: SentryEventBase;
+  event: Event;
   type: string;
   data: {
-    values: Array<Crumb>;
+    values: Array<Breadcrumb>;
   };
 };
 
@@ -35,8 +38,8 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
   state: State = {
     isCollapsed: true,
     searchTerm: '',
-    crumbs: [],
-    filteredCrumbs: [],
+    breadcrumbs: [],
+    filteredBreadcrumbs: [],
   };
 
   componentDidMount() {
@@ -45,17 +48,17 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
 
   loadCrumbs = () => {
     const {data} = this.props;
-    let crumbs = data.values;
+    let breadcrumbs = data.values;
 
     // Add the error event as the final (virtual) breadcrumb
     const virtualCrumb = this.getVirtualCrumb();
     if (virtualCrumb) {
-      crumbs = [...data.values, virtualCrumb];
+      breadcrumbs = [...data.values, virtualCrumb];
     }
 
     this.setState({
-      crumbs,
-      filteredCrumbs: crumbs,
+      breadcrumbs,
+      filteredBreadcrumbs: breadcrumbs,
     });
   };
 
@@ -70,7 +73,7 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
     return match[1];
   };
 
-  getVirtualCrumb = (): Crumb | undefined => {
+  getVirtualCrumb = (): Breadcrumb | undefined => {
     const {event} = this.props;
 
     const exception = event.entries.find(entry => entry.type === 'exception');
@@ -97,7 +100,7 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
 
     return {
       type: 'message',
-      level: levelTag?.value as Crumb['level'],
+      level: levelTag?.value as Breadcrumb['level'],
       category: 'message',
       message: event.message,
       timestamp: event.dateCreated,
@@ -105,27 +108,29 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
   };
 
   getCollapsedCrumbQuantity = (): {
-    filteredCollapsedCrumbs: Array<Crumb>;
+    filteredCollapsedBreadcrumbs: Array<Breadcrumb>;
     collapsedQuantity: number;
   } => {
-    const {isCollapsed, filteredCrumbs} = this.state;
+    const {isCollapsed, filteredBreadcrumbs} = this.state;
 
-    let filteredCollapsedCrumbs = filteredCrumbs;
+    let filteredCollapsedBreadcrumbs = filteredBreadcrumbs;
 
-    if (isCollapsed && filteredCollapsedCrumbs.length > MAX_CRUMBS_WHEN_COLLAPSED) {
-      filteredCollapsedCrumbs = filteredCollapsedCrumbs.slice(-MAX_CRUMBS_WHEN_COLLAPSED);
+    if (isCollapsed && filteredCollapsedBreadcrumbs.length > MAX_CRUMBS_WHEN_COLLAPSED) {
+      filteredCollapsedBreadcrumbs = filteredCollapsedBreadcrumbs.slice(
+        -MAX_CRUMBS_WHEN_COLLAPSED
+      );
     }
 
     return {
-      filteredCollapsedCrumbs,
-      collapsedQuantity: filteredCrumbs.length - filteredCollapsedCrumbs.length,
+      filteredCollapsedBreadcrumbs,
+      collapsedQuantity: filteredBreadcrumbs.length - filteredCollapsedBreadcrumbs.length,
     };
   };
 
   handleChangeSearchTerm = (searchTerm: string) => {
-    const {crumbs} = this.state;
+    const {breadcrumbs} = this.state;
 
-    const filteredCrumbs = crumbs.filter(
+    const filteredBreadcrumbs = breadcrumbs.filter(
       item =>
         // return true if any of category, message, or level contain queryValue
         !!['category', 'message', 'level'].find(prop => {
@@ -136,7 +141,7 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
 
     this.setState({
       searchTerm,
-      filteredCrumbs,
+      filteredBreadcrumbs,
     });
   };
 
@@ -156,7 +161,10 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
   render() {
     const {event, type} = this.props;
     const {searchTerm} = this.state;
-    const {collapsedQuantity, filteredCollapsedCrumbs} = this.getCollapsedCrumbQuantity();
+    const {
+      collapsedQuantity,
+      filteredCollapsedBreadcrumbs,
+    } = this.getCollapsedCrumbQuantity();
 
     return (
       <EventDataSection
@@ -178,7 +186,7 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
         wrapTitle={false}
       >
         <Content>
-          {filteredCollapsedCrumbs.length > 0 ? (
+          {filteredCollapsedBreadcrumbs.length > 0 ? (
             <PlatformContextProvider value={{platform: event.platform}}>
               <BreadCrumbs className="crumbs">
                 {collapsedQuantity > 0 && (
@@ -187,9 +195,26 @@ class BreadcrumbsContainer extends React.Component<Props, State> {
                     quantity={collapsedQuantity}
                   />
                 )}
-                {filteredCollapsedCrumbs.map((item, idx) => (
-                  <Breadcrumb key={idx} crumb={item} />
-                ))}
+                {filteredCollapsedBreadcrumbs.map((crumb, idx) => {
+                  const convertedBreadcrumb = convertBreadcrumbType(crumb);
+                  const {color, icon, renderer} = getBreadcrumbDetails(
+                    convertedBreadcrumb
+                  );
+
+                  return (
+                    <BreadCrumb
+                      key={idx}
+                      error={
+                        convertedBreadcrumb.type === 'message' ||
+                        convertedBreadcrumb.type === 'error'
+                      }
+                    >
+                      <BreadCrumbIconWrapper color={color}>{icon}</BreadCrumbIconWrapper>
+                      {renderer}
+                      <BreadcrumbTime timestamp={crumb.timestamp} />
+                    </BreadCrumb>
+                  );
+                })}
               </BreadCrumbs>
             </PlatformContextProvider>
           ) : (

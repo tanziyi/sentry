@@ -5,7 +5,7 @@ import {Color} from 'app/utils/theme';
 import space from 'app/styles/space';
 
 // TODO(style): color #e7eaef and #e7c0bc are not yet in theme
-const LI = styled('li')<{error?: boolean}>`
+const BreadCrumb = styled('li')<{error?: boolean}>`
   position: relative;
   padding: ${space(1)} ${space(3)} ${space(0.5)} ${space(3)} !important;
   margin: 0 -1px;
@@ -33,7 +33,7 @@ const LI = styled('li')<{error?: boolean}>`
 `;
 
 // TODO(style): color #968ba0 is not yet in theme
-const IconWrapper = styled('div')<{color?: Color}>`
+const BreadCrumbIconWrapper = styled('div')<{color?: Color}>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,4 +48,4 @@ const IconWrapper = styled('div')<{color?: Color}>`
   border: 1px solid ${p => (p.color ? p.theme[p.color] : '#968ba0')};
 `;
 
-export {LI, IconWrapper};
+export {BreadCrumb, BreadCrumbIconWrapper};

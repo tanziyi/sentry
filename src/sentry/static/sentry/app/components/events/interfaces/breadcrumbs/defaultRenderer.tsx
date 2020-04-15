@@ -5,30 +5,30 @@ import SummaryLine from 'app/components/events/interfaces/breadcrumbs/summaryLin
 import {getMeta} from 'app/components/events/meta/metaProxy';
 
 import getBreadcrumbCustomRendererValue from './getBreadcrumbCustomRendererValue';
-import {CrumbTypeDefault, CrumbTypeNavigation} from './types';
+import {BreadcrumbTypeDefault, BreadcrumbTypeNavigation} from './types';
 
 type Props = {
-  crumb: CrumbTypeDefault | CrumbTypeNavigation;
+  breadcrumb: BreadcrumbTypeDefault | BreadcrumbTypeNavigation;
 };
 
-const DefaultRenderer = ({crumb}: Props) => (
+const DefaultRenderer = ({breadcrumb}: Props) => (
   <CrumbTable
-    crumb={crumb}
+    breadcrumb={breadcrumb}
     summary={
       <SummaryLine>
-        {crumb?.message && (
+        {breadcrumb?.message && (
           <pre>
             <code>
               {getBreadcrumbCustomRendererValue({
-                value: crumb.message,
-                meta: getMeta(crumb, 'message'),
+                value: breadcrumb.message,
+                meta: getMeta(breadcrumb, 'message'),
               })}
             </code>
           </pre>
         )}
       </SummaryLine>
     }
-    kvData={crumb.data}
+    kvData={breadcrumb.data}
   />
 );
 

@@ -32,6 +32,6 @@ const BreadcrumbTime = ({timestamp}: Props) => {
 export default BreadcrumbTime;
 
 const Time = styled('div')`
-  font-size: 12px;
+  font-size: ${p => p.theme.fontSizeSmall};
   color: #493e54;
 `;

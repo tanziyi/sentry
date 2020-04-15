@@ -1,4 +1,4 @@
-type CrumbCategory =
+type BreadcrumbCategory =
   | 'started'
   | 'UIViewController'
   | 'touch'
@@ -7,25 +7,25 @@ type CrumbCategory =
   | 'xhr'
   | 'console';
 
-type CrumbLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug';
+type BreadcrumbLevel = 'fatal' | 'error' | 'warning' | 'info' | 'debug';
 
-type CrumbTypeBase = {
+type BreadcrumbTypeBase = {
   timestamp?: string; //it's recommended
-  category?: CrumbCategory;
+  category?: BreadcrumbCategory;
   message?: string;
-  level?: CrumbLevel;
+  level?: BreadcrumbLevel;
   event_id?: string;
 };
 
-export type CrumbTypeNavigation = {
+export type BreadcrumbTypeNavigation = {
   type: 'navigation';
   data?: {
     to: string;
     from: string;
   };
-} & CrumbTypeBase;
+} & BreadcrumbTypeBase;
 
-export type CrumbTypeHTTP = {
+export type BreadcrumbTypeHTTP = {
   type: 'http';
   data?: {
     url?: string;
@@ -42,12 +42,16 @@ export type CrumbTypeHTTP = {
     status_code?: number;
     reason?: string;
   };
-} & CrumbTypeBase;
+} & BreadcrumbTypeBase;
 
-export type CrumbTypeDefault = {
-  type: 'error' | 'info' | 'debug' | 'message' | 'default' | 'user';
+export type BreadcrumbTypeDefault = {
+  type: 'error' | 'info' | 'debug' | 'message' | 'default' | 'user' | 'query';
   data?: {[key: string]: any};
-} & CrumbTypeBase;
+} & BreadcrumbTypeBase;
 
-export type Crumb = CrumbTypeNavigation | CrumbTypeHTTP | CrumbTypeDefault;
-export type CrumbType = Crumb['type'];
+export type Breadcrumb =
+  | BreadcrumbTypeNavigation
+  | BreadcrumbTypeHTTP
+  | BreadcrumbTypeDefault;
+
+export type BreadcrumbType = Breadcrumb['type'];

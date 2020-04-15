@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import {tct} from 'app/locale';
 import {IconEllipsis} from 'app/icons/iconEllipsis';
 
-import {LI, IconWrapper} from './styles';
+import {BreadCrumb, BreadCrumbIconWrapper} from './styles';
 
 type Props = {
   onClick: () => void;
@@ -12,18 +12,18 @@ type Props = {
 };
 
 const BreadcrumbCollapsed = ({quantity, onClick}: Props) => (
-  <StyledLI onClick={onClick}>
-    <IconWrapper>
+  <StyledBreadCrumb onClick={onClick}>
+    <BreadCrumbIconWrapper>
       <IconEllipsis />
-    </IconWrapper>
+    </BreadCrumbIconWrapper>
     {tct('Show [quantity] collapsed crumbs', {quantity})}
-  </StyledLI>
+  </StyledBreadCrumb>
 );
 
 export default BreadcrumbCollapsed;
 
 // TODO(style): color #e7e4eb is not yet in theme
-const StyledLI = styled(LI)`
+const StyledBreadCrumb = styled(BreadCrumb)`
   background: ${p => p.theme.whiteDark};
   margin: 0 -2px;
   border: 1px solid #e7e4eb;
